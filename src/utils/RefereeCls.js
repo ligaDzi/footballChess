@@ -84,6 +84,10 @@ export default class RefereeCls {
     return possiblePoints
   }
 
+  isPossible3StepMove(points, field, steps, stepsCount) {
+    console.log(`START - stepsCount`, stepsCount)
+  }
+
   getNameTeamWithBall() {
     return this.__judgement(this.#modeGame)
   }
