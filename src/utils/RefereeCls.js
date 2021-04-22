@@ -93,35 +93,85 @@ export default class RefereeCls {
    * @returns boolen
    */
   isPossible3MoveStep(pointBall, points, field, steps) {
-    let stepsCount = 1
-    console.log(`START - stepsCount`, stepsCount)
-    
+    console.log(`points`, points)
+    console.log(`steps`, steps)
     const pointsLength = points.length
     for (let i=0; pointsLength >= (i+1); i++) {
 
-      let [arroundPoint, cornerArroundPoint] = field.getCortegePArroundCArroundPoint(points[i])
+      let pointMock = points[i].clone()
+      pointMock.checked = true
+      let [arroundPoint, cornerArroundPoint] = field.getCortegePArroundCArroundPoint(pointMock)
       let nextSteps1 = new StepList(Object.values(steps.list))
-      nextSteps1.addList(new StepCls('nameTeam', 'colorTeam', pointBall, points[i]))
+      nextSteps1.addList(new StepCls('nameTeam', 'colorTeam', pointBall, pointMock))
       let possibleMovePoints = this.getPossibleMovePoints(arroundPoint, cornerArroundPoint, nextSteps1)
 
+      console.log(`possibleMovePoints`, possibleMovePoints)
+      console.log(`nextSteps1`, nextSteps1)
       let possibleMPLength = possibleMovePoints.length
       if (possibleMPLength > 0) {
 
         for (let x=0; possibleMPLength >= (x+1); x++) {
-          let [arroundPoint, cornerArroundPoint] = field.getCortegePArroundCArroundPoint(possibleMovePoints[x])
-          let nextSteps2 = new StepList(Object.values(nextSteps1))
-          nextSteps2.addList(new StepCls('nameTeam', 'colorTeam', points[i], possibleMovePoints[x]))
+          let pointMock2 = possibleMovePoints[x].clone()
+          pointMock2.checked = true
+          let [arroundPoint, cornerArroundPoint] = field.getCortegePArroundCArroundPoint(pointMock2)
+          let nextSteps2 = new StepList(Object.values(nextSteps1.list))
+          console.log('_________________________________');
+          console.log('arroundPoint', arroundPoint);
+          console.log('cornerArroundPoint', cornerArroundPoint);
+          console.log('_________________________________');
+          arroundPoint = arroundPoint.map(point => {
+            if (point.name === pointMock.name) return pointMock
+            return point
+          })
+          for (const key in cornerArroundPoint) {
+            if (Object.hasOwnProperty.call(cornerArroundPoint, key)) {
+              if (cornerArroundPoint[key].point?.name === pointMock.name) {
+                cornerArroundPoint[key].point = pointMock
+              }                
+            }
+          }
+          console.log('_________________________________');
+          console.log('arroundPoint', arroundPoint);
+          console.log('cornerArroundPoint', cornerArroundPoint);
+          console.log('_________________________________');
+          nextSteps2.addList(new StepCls('nameTeam', 'colorTeam', pointMock, pointMock2))
           let possibleMovePoints2 = this.getPossibleMovePoints(arroundPoint, cornerArroundPoint, nextSteps2)
 
+          console.log('_________________________________');
+          console.log(`possibleMovePoints2`, possibleMovePoints2)
+          console.log(`nextSteps2`, nextSteps2)
+          console.log('_________________________________');
           let possibleMPLength2 = possibleMovePoints2.length
           if (possibleMPLength2 > 0) {
 
             for (let y=0; possibleMPLength2 >= (y+1); y++) {
-              let [arroundPoint, cornerArroundPoint] = field.getCortegePArroundCArroundPoint(possibleMovePoints2[y])
-              let nextSteps3 = new StepList(Object.values(nextSteps2))
-              nextSteps3.addList(new StepCls('nameTeam', 'colorTeam', possibleMovePoints[x], possibleMovePoints2[y]))
+              let pointMock3 = possibleMovePoints2[y].clone()
+              pointMock3.checked = true
+              let [arroundPoint, cornerArroundPoint] = field.getCortegePArroundCArroundPoint(pointMock3)
+              let nextSteps3 = new StepList(Object.values(nextSteps2.list))
+              // console.log('_________________________________');
+              // console.log('arroundPoint', arroundPoint);
+              // console.log('cornerArroundPoint', cornerArroundPoint);
+              // console.log('_________________________________');
+              // arroundPoint = arroundPoint.map(point => {
+              //   if (point.name === pointMock2.name) return pointMock2
+              //   return point
+              // })
+              // for (const key in cornerArroundPoint) {
+              //   if (Object.hasOwnProperty.call(cornerArroundPoint, key)) {
+              //     if (cornerArroundPoint[key].point.name === pointMock2.name) {
+              //       cornerArroundPoint[key].point = pointMock2
+              //     }                
+              //   }
+              // }
+              // console.log('_________________________________');
+              // console.log('arroundPoint', arroundPoint);
+              // console.log('cornerArroundPoint', cornerArroundPoint);
+              nextSteps3.addList(new StepCls('nameTeam', 'colorTeam', pointMock2, pointMock3))
               let possibleMovePoints3 = this.getPossibleMovePoints(arroundPoint, cornerArroundPoint, nextSteps3)
-
+              
+              console.log(`possibleMovePoints3`, possibleMovePoints3)
+              console.log(`nextSteps3`, nextSteps3)
               if (possibleMovePoints3.length > 0) return true
             }
           }

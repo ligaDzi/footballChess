@@ -74,12 +74,13 @@ export default class GameCls {
     // ДВИЖЕНИЕ С МЯЧОМ
     const possibleMovePoints = this.#referee.getPossibleMovePoints(pointsArroundBall, cornerArroundBall, this.#steps)
     if (possibleMovePoints.length > 0) {
-      console.log(`this.#steps`, this.#steps)
+      console.log(`this.#stepCount`, this.#stepCount)
       if (this.#stepCount === 3) {
+        console.log('UPPPPPPPPPPP');
         const isPossible3MoveStep = this.#referee.isPossible3MoveStep(point, possibleMovePoints, this.#field, this.#steps)
+        console.log(`isPossible3MoveStep`, isPossible3MoveStep)
         
         if (isPossible3MoveStep) {
-          console.log('UPPPPPPPPPPPPPPPPP');
           this.#field.updatePossibleMovePoints(possibleMovePoints)
       
           // ПЕРЕДАТЬ МЯЧ СОПЕРНИКУ ПОСЛЕ УДАРА

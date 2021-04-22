@@ -62,6 +62,16 @@ export class PointCls {
     return actCub
   }
 
+  clone() {    
+    switch (true) {
+      case this instanceof PointCls: return new PointCls(this.x, this.y, this.name)
+      case this instanceof CentralDistrictCls: return new CentralDistrictCls(this.x, this.y, this.name)
+      case this instanceof GoalPostCls: return new GoalPostCls(this.x, this.y, this.name)
+      case this instanceof PortalPointCls: return new PortalPointCls(this.team, this.x, this.y, this.name)
+      case this instanceof StartPointCls: return new StartPointCls(this.team, this.x, this.y, this.name)
+    }
+  }
+
   getNameArroundPoints() {
     const actNum = +this.nameNumber
     const actSymbolCode = this.nameSymbol.codePointAt(0)
