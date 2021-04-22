@@ -74,14 +74,29 @@ export default class GameCls {
     // ДВИЖЕНИЕ С МЯЧОМ
     const possibleMovePoints = this.#referee.getPossibleMovePoints(pointsArroundBall, cornerArroundBall, this.#steps)
     if (possibleMovePoints.length > 0) {
-      this.#field.updatePossibleMovePoints(possibleMovePoints)
+      console.log(`this.#steps`, this.#steps)
+      if (this.#stepCount === 3) {
+        const isPossible3MoveStep = this.#referee.isPossible3MoveStep(point, possibleMovePoints, this.#field, this.#steps)
+        
+        if (isPossible3MoveStep) {
+          console.log('UPPPPPPPPPPPPPPPPP');
+          this.#field.updatePossibleMovePoints(possibleMovePoints)
       
-      // ПЕРЕДАТЬ МЯЧ СОПЕРНИКУ ПОСЛЕ УДАРА
-      if (kickEnum.includes(modeGame)) {
-        this.__transferballOpponent()
-      }
-      return
+          // ПЕРЕДАТЬ МЯЧ СОПЕРНИКУ ПОСЛЕ УДАРА
+          if (kickEnum.includes(modeGame)) {
+            this.__transferballOpponent()
+          }
+          return
+        }
+      } else {
+        this.#field.updatePossibleMovePoints(possibleMovePoints)
       
+        // ПЕРЕДАТЬ МЯЧ СОПЕРНИКУ ПОСЛЕ УДАРА
+        if (kickEnum.includes(modeGame)) {
+          this.__transferballOpponent()
+        }
+        return        
+      }      
     }
     
     // УДАР ПО МЯЧУ

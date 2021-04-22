@@ -84,8 +84,51 @@ export default class RefereeCls {
     return possiblePoints
   }
 
-  isPossible3StepMove(points, field, steps, stepsCount) {
+  /**
+   * ВОЗМОЖНО ЛИ КОМАНДЕ СДЕЛАТЬ ТРИ ХОДА
+   * @param {PointCls} pointBall 
+   * @param {Array} points 
+   * @param {FieldCls} field 
+   * @param {StepList} steps 
+   * @returns boolen
+   */
+  isPossible3MoveStep(pointBall, points, field, steps) {
+    let stepsCount = 1
     console.log(`START - stepsCount`, stepsCount)
+    
+    const pointsLength = points.length
+    for (let i=0; pointsLength >= (i+1); i++) {
+
+      let [arroundPoint, cornerArroundPoint] = field.getCortegePArroundCArroundPoint(points[i])
+      let nextSteps1 = new StepList(Object.values(steps.list))
+      nextSteps1.addList(new StepCls('nameTeam', 'colorTeam', pointBall, points[i]))
+      let possibleMovePoints = this.getPossibleMovePoints(arroundPoint, cornerArroundPoint, nextSteps1)
+
+      let possibleMPLength = possibleMovePoints.length
+      if (possibleMPLength > 0) {
+
+        for (let x=0; possibleMPLength >= (x+1); x++) {
+          let [arroundPoint, cornerArroundPoint] = field.getCortegePArroundCArroundPoint(possibleMovePoints[x])
+          let nextSteps2 = new StepList(Object.values(nextSteps1))
+          nextSteps2.addList(new StepCls('nameTeam', 'colorTeam', points[i], possibleMovePoints[x]))
+          let possibleMovePoints2 = this.getPossibleMovePoints(arroundPoint, cornerArroundPoint, nextSteps2)
+
+          let possibleMPLength2 = possibleMovePoints2.length
+          if (possibleMPLength2 > 0) {
+
+            for (let y=0; possibleMPLength2 >= (y+1); y++) {
+              let [arroundPoint, cornerArroundPoint] = field.getCortegePArroundCArroundPoint(possibleMovePoints2[y])
+              let nextSteps3 = new StepList(Object.values(nextSteps2))
+              nextSteps3.addList(new StepCls('nameTeam', 'colorTeam', possibleMovePoints[x], possibleMovePoints2[y]))
+              let possibleMovePoints3 = this.getPossibleMovePoints(arroundPoint, cornerArroundPoint, nextSteps3)
+
+              if (possibleMovePoints3.length > 0) return true
+            }
+          }
+        }
+      }
+    }
+    return false
   }
 
   getNameTeamWithBall() {
