@@ -37,6 +37,14 @@ export default class RulesCls {
     return false
   } 
 
+  /**
+   * ЗАБЛОКИРОВАННА ЛИ УГЛАВАЯ ТОЧКА
+   * @param {PoinCls} point 
+   * @param {String} corner 
+   * @param {Array} arroundPoint 
+   * @param {StepsList} steps 
+   * @returns boolen
+   */
   static isCornerPointNOTBlock(point, corner, arroundPoint, steps) {
     const rightPoint = this.__getRightPoint(point.x, point.y, arroundPoint)
     const leftPoint = this.__getLeftPoint(point.x, point.y, arroundPoint)
@@ -64,6 +72,32 @@ export default class RulesCls {
           RulesCls.__isTroughCentr(leftPoint, topPoint) ||
           (leftPoint.checked && topPoint.checked && steps.isConnectionPoints(leftPoint, topPoint))
         )
+    }
+  }
+
+  /**
+   * ЗАБЛОКИРОВАННА ЛИ УГЛАВАЯ ТОЧКА В ЦЕНТРАЛЬНОМ КРУГЕ
+   * @param {PoinCls} point 
+   * @param {String} corner 
+   * @param {Array} arroundPoint 
+   * @param {StepsList} steps 
+   * @returns boolen
+   */
+  static isCornerPointNOTBlockCentral(point, corner, arroundPoint, steps) {
+    const rightPoint = this.__getRightPoint(point.x, point.y, arroundPoint)
+    const leftPoint = this.__getLeftPoint(point.x, point.y, arroundPoint)
+    const topPoint = this.__getTopPoint(point.x, point.y, arroundPoint)
+    const bottomPoint = this.__getBottomPoint(point.x, point.y, arroundPoint)
+    
+    switch (corner) {
+      case cornerNameEnum.LEFT_TOP:
+        return !(rightPoint.checked && bottomPoint.checked && steps.isConnectionPoints(rightPoint, bottomPoint))
+      case cornerNameEnum.LEFT_BOTTOM:
+        return !(rightPoint.checked && topPoint.checked && steps.isConnectionPoints(rightPoint, topPoint))        
+      case cornerNameEnum.RIGHT_TOP:
+        return !(leftPoint.checked && bottomPoint.checked && steps.isConnectionPoints(leftPoint, bottomPoint))
+      case cornerNameEnum.RIGHT_BOTTOM:
+        return !(leftPoint.checked && topPoint.checked && steps.isConnectionPoints(leftPoint, topPoint))
     }
   }
 

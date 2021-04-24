@@ -1,5 +1,5 @@
 import RulesCls from './RulesCls'
-import { PointCls, StartPointCls } from './PointCls'
+import { CentralDistrictCls, PointCls, StartPointCls } from './PointCls'
 import { modeGameEnum, halfEnum } from './helpers'
 import { StepCls, StepList } from './StepCls'
 
@@ -34,7 +34,7 @@ export default class RefereeCls {
    * @param {StepList} steps 
    * @returns Array
    */
-  getPossibleMovePoints(pointsArroundBall, cornerArroundBall, steps) {
+  getPossibleMovePoints(pointsArroundBall, cornerArroundBall, steps, isBallCentralDistrict = false) {
     let possiblePoints = []
     const cornerABArr = this.__getCornerPointsArr(cornerArroundBall)
     const noCornerPoints = pointsArroundBall.filter(point => !cornerABArr.includes(point))
@@ -43,7 +43,12 @@ export default class RefereeCls {
      * НЕ УГЛОВЫЕ ТОЧКИ
      */
     noCornerPoints.forEach(point => {
-      const isPossible = RulesCls.isPointFree(point) && RulesCls.isPointNOTCentralDistrict(point)
+      let isPossible = null
+      if (isBallCentralDistrict) {
+        isPossible = RulesCls.isPointFree(point)
+      } else {
+        isPossible = RulesCls.isPointFree(point) && RulesCls.isPointNOTCentralDistrict(point)
+      }
       if (isPossible) possiblePoints.push(point)
     })
 
@@ -56,8 +61,13 @@ export default class RefereeCls {
         const corner = cornerArroundBall[key].corner
         const point = cornerArroundBall[key].point
 
+        let isPossible = null
         if (point) {
-          const isPossible = RulesCls.isPointFree(point) && RulesCls.isPointNOTCentralDistrict(point) && RulesCls.isCornerPointNOTBlock(point, corner, pointsArroundBall, steps)
+          if (isBallCentralDistrict) {
+            isPossible = RulesCls.isPointFree(point) && RulesCls.isCornerPointNOTBlockCentral(point, corner, pointsArroundBall, steps)
+          } else {
+            isPossible = RulesCls.isPointFree(point) && RulesCls.isPointNOTCentralDistrict(point) && RulesCls.isCornerPointNOTBlock(point, corner, pointsArroundBall, steps)
+          }
           if (isPossible) possiblePoints.push(point)       
         }
       }
@@ -85,6 +95,69 @@ export default class RefereeCls {
   }
 
   /**
+   * МЕТОД РАБОТАЕТ НЕ ВЕРНО. 
+   * @param {PointCls} pointBall 
+   * @param {Array} points 
+   * @param {FieldCls} field 
+   * @param {StepsList} steps 
+   * @returns Object
+   */
+  getPossibleMovePointsCentral(pointBall, points, field, steps) {
+    // 1- STEP
+    const pointsLength = points.length
+    for (let x=0; pointsLength >= (x+1); x++) {
+
+      let { 
+        pointMock, 
+        nextSteps, 
+        possibleMovePoints } = this.__findePossibleMovePoints(points[x], pointBall, field, steps.list, true, true)
+        
+        // 2 - STEP
+        const possibleMPLength = possibleMovePoints.length
+        if (possibleMPLength === 0) return possibleMovePoints
+
+        for (let y=0; possibleMPLength >= (y+1); y++) {
+
+          let {
+            pointMock: pointMock2,
+            nextSteps: nextSteps2,
+            possibleMovePoints: possibleMovePoints2
+          } = this.__findePossibleMovePoints(possibleMovePoints[y], pointMock, field, nextSteps.list, true, true)
+
+          // 3 - STEP
+          const possibleMPLength2 = possibleMovePoints2.length
+          if (possibleMPLength2 === 0) return possibleMovePoints2
+
+          for (let z=0; possibleMPLength2 >= (z+1); z++) {
+
+            if (possibleMovePoints2[z] instanceof CentralDistrictCls) {
+              possibleMovePoints2[z] = null
+            } else {
+              possibleMovePoints2[z] = { point: possibleMovePoints2[z]}
+            }
+          }
+
+          possibleMovePoints2 = possibleMovePoints2.filter(p => p !== null)
+
+          if (possibleMovePoints2.length === 0) {
+            possibleMovePoints[y] = null
+          } else {
+            possibleMovePoints[y] = { point: possibleMovePoints[y], possiblePoints: possibleMovePoints2 }
+          }
+        }
+           
+        possibleMovePoints = possibleMovePoints.filter(p => p !== null)
+
+        if (possibleMovePoints.length === 0) {
+          points[x] = null
+        } else {
+          points[x] = { point: points[x], possiblePoints: possibleMovePoints }
+        }
+    }
+    return points.filter(p => p !== null)
+  }
+
+  /**
    * ВОЗМОЖНО ЛИ КОМАНДЕ СДЕЛАТЬ ТРИ ХОДА
    * @param {PointCls} pointBall 
    * @param {Array} points 
@@ -103,7 +176,7 @@ export default class RefereeCls {
         possibleMovePoints } = this.__findePossibleMovePoints(points[i], pointBall, field, steps.list, false)
 
       // 2 - STEP
-      let possibleMPLength = possibleMovePoints.length
+      const possibleMPLength = possibleMovePoints.length
       if (possibleMPLength > 0) {
 
         for (let x=0; possibleMPLength >= (x+1); x++) {
@@ -115,7 +188,7 @@ export default class RefereeCls {
           } = this.__findePossibleMovePoints(possibleMovePoints[x], pointMock, field, nextSteps.list, true)
 
           // 3 - STEP
-          let possibleMPLength2 = possibleMovePoints2.length
+          const possibleMPLength2 = possibleMovePoints2.length
           if (possibleMPLength2 > 0) {
 
             for (let y=0; possibleMPLength2 >= (y+1); y++) {
@@ -238,7 +311,7 @@ export default class RefereeCls {
    * @param {Boolean} isInsertPrevPoint 
    * @returns Object
    */
-     __findePossibleMovePoints(point, prevPoint, field, stepArr, isInsertPrevPoint) {
+     __findePossibleMovePoints(point, prevPoint, field, stepArr, isInsertPrevPoint, isPointCentralDistrict = false) {
       const pointMock = point.clone()
       pointMock.checked = true
       let [arroundPoint, cornerArroundPoint] = field.getCortegePArroundCArroundPoint(pointMock)
@@ -259,7 +332,7 @@ export default class RefereeCls {
       }
   
       nextSteps.addList(new StepCls('nameTeam', 'colorTeam', prevPoint, pointMock))
-      const possibleMovePoints = this.getPossibleMovePoints(arroundPoint, cornerArroundPoint, nextSteps)
+      const possibleMovePoints = this.getPossibleMovePoints(arroundPoint, cornerArroundPoint, nextSteps, isPointCentralDistrict)
   
       return { pointMock, nextSteps, possibleMovePoints }
     }
