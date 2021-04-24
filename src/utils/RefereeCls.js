@@ -32,7 +32,7 @@ export default class RefereeCls {
    * @param {Array} pointsArroundBall 
    * @param {Object} cornerArroundBall 
    * @param {StepList} steps 
-   * @returns (Array)
+   * @returns Array
    */
   getPossibleMovePoints(pointsArroundBall, cornerArroundBall, steps) {
     let possiblePoints = []
@@ -71,7 +71,7 @@ export default class RefereeCls {
    * @param {Array} kickPoints 
    * @param {StepList} steps 
    * @param {FieldCls} field 
-   * @returns (Array)
+   * @returns Array
    */
   getPossibleKickPoints(kickPoints, steps, field) {
     let possiblePoints = []
@@ -132,8 +132,6 @@ export default class RefereeCls {
     }
     return false
   }
-
-
 
   getNameTeamWithBall() {
     return this.__judgement(this.#modeGame)

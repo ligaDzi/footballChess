@@ -29,7 +29,7 @@ export default class RulesCls {
     const count = steps.countStepThroughPoint(point)
     if (count < 2) {
       const [arroundPoint, cornerArroundPoint] = field.getCortegePArroundCArroundPoint(point)
-      const possibalMove = referee.getPossibleMovePoints([point], arroundPoint, cornerArroundPoint, steps)
+      const possibalMove = referee.getPossibleMovePoints(arroundPoint, cornerArroundPoint, steps)
       const isBlock = !possibalMove.length
       return isBlock
     }
