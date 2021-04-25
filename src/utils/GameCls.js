@@ -16,6 +16,7 @@ export default class GameCls {
   #guestTeam = null
   #teamWithBall = null
   #referee = null
+  #historyStep = []
   #stepCount = 0
   #steps = new StepList()
   #kickList = []
@@ -60,6 +61,8 @@ export default class GameCls {
   }
 
   nextStep(point) {
+    this.#historyStep.push(point)
+
     const { modeGame, prevModeGame } = this.#referee
     const kickEnum = [modeGameEnum.HOME_KICK, modeGameEnum.GUEST_KICK]
 
@@ -73,8 +76,8 @@ export default class GameCls {
     
     const { pointsArroundBall, cornerArroundBall } = this.#field  
 
+    // ВЫВОД МЯЧА ИЗ ЦЕНТРАЛЬНОГО КРУГА
     if (point instanceof CentralDistrictCls) {
-      console.log('CENTRAL')
       const possibleMovePoints = this.#referee.getPossibleMovePoints(pointsArroundBall, cornerArroundBall, this.#steps, true)
 
       // ПЕРЕДАТЬ МЯЧ СОПЕРНИКУ ПОСЛЕ УДАРА
@@ -94,28 +97,32 @@ export default class GameCls {
         console.log('__________________________________');
       }
 
-      if (this.#possibleMovePointsCentral.length === 0) return
-
-      if (this.#stepCount === 0) {
-        const possibleMovePoints = this.#possibleMovePointsCentral.map(item => item.point)
-        this.#field.updatePossibleMovePoints(possibleMovePoints)
+      if (this.#possibleMovePointsCentral.length > 0) {
+        
+        if (this.#stepCount === 0) {
+          const possibleMovePoints = this.#possibleMovePointsCentral.map(item => item.point)
+          this.#field.updatePossibleMovePoints(possibleMovePoints)
+        }
+  
+        if (this.#stepCount === 1) {
+          // this.#possibleMovePointsCentral = this.#possibleMovePointsCentral.find(item => item.point.name === point.name)
+          const possibleMovePoints = this.#possibleMovePointsCentral
+            .find(item => item.point.name === point.name)
+            .possiblePoints.map(item => item.point)
+  
+          this.#field.updatePossibleMovePoints(possibleMovePoints)
+        }
+  
+        if (this.#stepCount === 2) {
+          const possibleMovePoints = this.#possibleMovePointsCentral
+            .find(item => item.point.name === this.#historyStep[this.#historyStep.length - 2].name)
+            .possiblePoints.find(item => item.point.name === point.name)
+            .possiblePoints.map(item => item.point)
+  
+          this.#field.updatePossibleMovePoints(possibleMovePoints)
+        }
+        return
       }
-
-      if (this.#stepCount === 1) {
-        this.#possibleMovePointsCentral = this.#possibleMovePointsCentral.find(item => item.point.name === point.name)
-        const possibleMovePoints = this.#possibleMovePointsCentral.possiblePoints.map(item => item.point)
-
-        this.#field.updatePossibleMovePoints(possibleMovePoints)
-      }
-
-      if (this.#stepCount === 2) {
-        const possibleMovePoints = this.#possibleMovePointsCentral
-          .possiblePoints.find(item => item.point.name === point.name)
-          .possiblePoints.map(item => item.point)
-
-        this.#field.updatePossibleMovePoints(possibleMovePoints)
-      }
-      return
     }
     
     // ДВИЖЕНИЕ С МЯЧОМ
