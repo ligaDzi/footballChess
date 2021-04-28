@@ -16,7 +16,6 @@ export default class GameCls {
   #guestTeam = null
   #teamWithBall = null
   #referee = null
-  #historyStep = []
   #stepCount = 0
   #steps = new StepList()
   #kickList = []
@@ -61,8 +60,6 @@ export default class GameCls {
   }
 
   nextStep(point) {
-    this.#historyStep.push(point)
-
     const { modeGame, prevModeGame } = this.#referee
     const kickEnum = [modeGameEnum.HOME_KICK, modeGameEnum.GUEST_KICK]
 
@@ -92,32 +89,26 @@ export default class GameCls {
           this.#field, 
           this.#steps
         )
-        console.log('__________________________________');
+        console.log('____________________________________________');
         console.log(`this.#possibleMovePointsCentral`, this.#possibleMovePointsCentral)
-        console.log('__________________________________');
+        console.log('____________________________________________');
       }
 
       if (this.#possibleMovePointsCentral.length > 0) {
         
         if (this.#stepCount === 0) {
-          const possibleMovePoints = this.#possibleMovePointsCentral.map(item => item.point)
+          const possibleMovePoints = this.#possibleMovePointsCentral.firstStep()
           this.#field.updatePossibleMovePoints(possibleMovePoints)
         }
   
         if (this.#stepCount === 1) {
-          // this.#possibleMovePointsCentral = this.#possibleMovePointsCentral.find(item => item.point.name === point.name)
-          const possibleMovePoints = this.#possibleMovePointsCentral
-            .find(item => item.point.name === point.name)
-            .possiblePoints.map(item => item.point)
+          const possibleMovePoints = this.#possibleMovePointsCentral.secondStep(point.name)
   
           this.#field.updatePossibleMovePoints(possibleMovePoints)
         }
   
         if (this.#stepCount === 2) {
-          const possibleMovePoints = this.#possibleMovePointsCentral
-            .find(item => item.point.name === this.#historyStep[this.#historyStep.length - 2].name)
-            .possiblePoints.find(item => item.point.name === point.name)
-            .possiblePoints.map(item => item.point)
+          const possibleMovePoints = this.#possibleMovePointsCentral.thirdSteps(point.name)
   
           this.#field.updatePossibleMovePoints(possibleMovePoints)
         }

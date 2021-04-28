@@ -2,6 +2,7 @@ import RulesCls from './RulesCls'
 import { CentralDistrictCls, PointCls, StartPointCls } from './PointCls'
 import { modeGameEnum, halfEnum } from './helpers'
 import { StepCls, StepList } from './StepCls'
+import { NodePossibleMoveCls, PossibleMoveTreeCls } from './PossibleMoveTreeCls'
 
 export default class RefereeCls {
   #name = null
@@ -95,7 +96,7 @@ export default class RefereeCls {
   }
 
   /**
-   * МЕТОД РАБОТАЕТ НЕ ВЕРНО. 
+   * ВОЗВРАЩАЕТ ОБЪЕКТ PossibleMoveTreeCls С ТОЧКАМИ ВОЗМОЖНЫМИ ДЛЯ ВЫХОДА ИЗ ЦЕНТРАЛЬНОГО КРУГА. 
    * @param {PointCls} pointBall 
    * @param {Array} points 
    * @param {FieldCls} field 
@@ -111,7 +112,7 @@ export default class RefereeCls {
         pointMock, 
         nextSteps, 
         possibleMovePoints } = this.__findePossibleMovePoints(points[x], pointBall, field, steps.list, true, true)
-        
+
         // 2 - STEP
         const possibleMPLength = possibleMovePoints.length
         if (possibleMPLength === 0) return possibleMovePoints
@@ -119,21 +120,18 @@ export default class RefereeCls {
         for (let y=0; possibleMPLength >= (y+1); y++) {
 
           let {
-            pointMock: pointMock2,
-            nextSteps: nextSteps2,
             possibleMovePoints: possibleMovePoints2
           } = this.__findePossibleMovePoints(possibleMovePoints[y], pointMock, field, nextSteps.list, true, true)
 
           // 3 - STEP
           const possibleMPLength2 = possibleMovePoints2.length
-          if (possibleMPLength2 === 0) return possibleMovePoints2
 
           for (let z=0; possibleMPLength2 >= (z+1); z++) {
 
             if (possibleMovePoints2[z] instanceof CentralDistrictCls) {
               possibleMovePoints2[z] = null
             } else {
-              possibleMovePoints2[z] = { point: possibleMovePoints2[z]}
+              possibleMovePoints2[z] = new NodePossibleMoveCls(possibleMovePoints2[z])
             }
           }
 
@@ -142,7 +140,7 @@ export default class RefereeCls {
           if (possibleMovePoints2.length === 0) {
             possibleMovePoints[y] = null
           } else {
-            possibleMovePoints[y] = { point: possibleMovePoints[y], possiblePoints: possibleMovePoints2 }
+            possibleMovePoints[y] = new NodePossibleMoveCls(possibleMovePoints[y], possibleMovePoints2)
           }
         }
            
@@ -151,10 +149,11 @@ export default class RefereeCls {
         if (possibleMovePoints.length === 0) {
           points[x] = null
         } else {
-          points[x] = { point: points[x], possiblePoints: possibleMovePoints }
+          points[x] = new NodePossibleMoveCls(points[x], possibleMovePoints)          
         }
     }
-    return points.filter(p => p !== null)
+
+    return new PossibleMoveTreeCls(points.filter(p => p !== null))
   }
 
   /**
@@ -302,38 +301,38 @@ export default class RefereeCls {
     return homeORGuest
   }
   
-    /**
-   * 
-   * @param {PointCls} point 
-   * @param {PointCls} prevPoint 
-   * @param {FieldCls} field 
-   * @param {Array} steps 
-   * @param {Boolean} isInsertPrevPoint 
-   * @returns Object
-   */
-     __findePossibleMovePoints(point, prevPoint, field, stepArr, isInsertPrevPoint, isPointCentralDistrict = false) {
-      const pointMock = point.clone()
-      pointMock.checked = true
-      let [arroundPoint, cornerArroundPoint] = field.getCortegePArroundCArroundPoint(pointMock)
-      const nextSteps = new StepList(Object.values(stepArr))
-  
-      if (isInsertPrevPoint) {
-        arroundPoint = arroundPoint.map(point => {
-          if (point.name === prevPoint.name) return prevPoint
-          return point
-        })
-        for (const key in cornerArroundPoint) {
-          if (Object.hasOwnProperty.call(cornerArroundPoint, key)) {
-            if (cornerArroundPoint[key].point?.name === prevPoint.name) {
-              cornerArroundPoint[key].point = prevPoint
-            }                
-          }
+   /**
+  * 
+  * @param {PointCls} point 
+  * @param {PointCls} prevPoint 
+  * @param {FieldCls} field 
+  * @param {Array} steps 
+  * @param {Boolean} isInsertPrevPoint 
+  * @returns Object
+  */
+  __findePossibleMovePoints(point, prevPoint, field, stepArr, isInsertPrevPoint, isPointCentralDistrict = false) {
+    const pointMock = point.clone()
+    pointMock.checked = true
+    let [arroundPoint, cornerArroundPoint] = field.getCortegePArroundCArroundPoint(pointMock)
+    const nextSteps = new StepList(Object.values(stepArr))
+
+    if (isInsertPrevPoint) {
+      arroundPoint = arroundPoint.map(point => {
+        if (point.name === prevPoint.name) return prevPoint
+        return point
+      })
+      for (const key in cornerArroundPoint) {
+        if (Object.hasOwnProperty.call(cornerArroundPoint, key)) {
+          if (cornerArroundPoint[key].point?.name === prevPoint.name) {
+            cornerArroundPoint[key].point = prevPoint
+          }                
         }
       }
-  
-      nextSteps.addList(new StepCls('nameTeam', 'colorTeam', prevPoint, pointMock))
-      const possibleMovePoints = this.getPossibleMovePoints(arroundPoint, cornerArroundPoint, nextSteps, isPointCentralDistrict)
-  
-      return { pointMock, nextSteps, possibleMovePoints }
     }
+
+    nextSteps.addList(new StepCls('nameTeam', 'colorTeam', prevPoint, pointMock))
+    const possibleMovePoints = this.getPossibleMovePoints(arroundPoint, cornerArroundPoint, nextSteps, isPointCentralDistrict)
+
+    return { pointMock, nextSteps, possibleMovePoints }
+  }
 }
