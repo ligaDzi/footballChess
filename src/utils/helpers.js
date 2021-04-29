@@ -1,9 +1,16 @@
 export const uid = () => Date.now().toString(36) + Math.random().toString(36)
 
+export const logValue = (nameValue, value) => {
+  console.log('___________________________________________________________________')
+  console.log(`[${nameValue}]:`, value)
+  console.log('___________________________________________________________________')
+}
+
 export const halfEnum = { 
   HOME: 'home', 
   GUEST: 'guest', 
-  HOME_AND_GUEST: 'all' }
+  HOME_AND_GUEST: 'all' 
+}
 
 export const modeGameEnum = {
   HOME_START: 'HOME_START',

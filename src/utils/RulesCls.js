@@ -1,6 +1,6 @@
 import { CentralDistrictCls } from './PointCls'
 
-import { cornerNameEnum } from './helpers'
+import { cornerNameEnum, logValue } from './helpers'
 
 export default class RulesCls {
   static widthField = null
@@ -25,15 +25,29 @@ export default class RulesCls {
     return true
   }
 
+  /**
+   * ОКРУЖЕНА ЛИ ТОЧКА. Т.Е. ВОЗМОЖНО ЛИ ДАЛЬНЕЙШЕЕ ДВИЖЕНИЕ ИЗ НЕЕ. 
+   * ЭТО НУЖНО ЗНАТЬ ПРИ УДАРАХ / ПЕРЕДАЧАХ, ВОЗМОЖНО ЛИ ПЕРЕДАТЬ В ЭТУ ТОЧКУ МЯЧ.
+   * @param {PointCls} point 
+   * @param {StepList} steps 
+   * @param {FieldCls} field 
+   * @param {RefereeCls} referee 
+   * @returns boolen
+   */
   static isPointSurrounded(point, steps, field, referee) {
     const count = steps.countStepThroughPoint(point)
     if (count < 2) {
+      const isPointCentralDistrict = point instanceof CentralDistrictCls
       const [arroundPoint, cornerArroundPoint] = field.getCortegePArroundCArroundPoint(point)
-      const possibalMove = referee.getPossibleMovePoints(arroundPoint, cornerArroundPoint, steps)
-      const isBlock = !possibalMove.length
+      const possibalMove = referee.getPossibleMovePoints(arroundPoint, cornerArroundPoint, steps, isPointCentralDistrict)
+      if (isPointCentralDistrict) {
+        const possibleMovePointsCentral = referee.getPossibleMovePointsCentral(point, possibalMove, field, steps)
+        const isBlock = !possibleMovePointsCentral.length
+        return isBlock
+      }
+      const isBlock = !referee.isPossible3MoveStep(point, possibalMove, field, steps)
       return isBlock
     }
-
     return false
   } 
 

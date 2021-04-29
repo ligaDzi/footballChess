@@ -89,9 +89,6 @@ export default class GameCls {
           this.#field, 
           this.#steps
         )
-        console.log('____________________________________________');
-        console.log(`this.#possibleMovePointsCentral`, this.#possibleMovePointsCentral)
-        console.log('____________________________________________');
       }
 
       if (this.#possibleMovePointsCentral.length > 0) {

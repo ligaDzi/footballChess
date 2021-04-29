@@ -89,6 +89,7 @@ export default class RefereeCls {
 
     kickPoints.forEach(point => {
       const isPossible = RulesCls.isPointFree(point) || RulesCls.isPointSurrounded(point, steps, field, this)
+      
       if (isPossible) possiblePoints.push(point)
     })
 
