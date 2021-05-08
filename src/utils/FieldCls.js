@@ -1,5 +1,5 @@
-import { PointCls } from './PointCls'
-import { cornerNameEnum} from './helpers'
+import { GoalPostCls, PointCls } from './PointCls'
+import { cornerNameEnum, logValue, halfEnum } from './helpers'
 
 export default class FieldCls {
   #widthCell = null
@@ -41,6 +41,17 @@ export default class FieldCls {
 
     const listNamePoints = this.#ball.point.getNameKickPoints()
     return this.#points.filter(p => listNamePoints.includes(p.name))
+  }
+  // МЯЧ НА ДОМАШНЕЙ ИЛИ ГОСТЕВОЙ ПОЛОВИНЕ ПОЛЯ
+  get nameHalfFieldWhereBall() {
+    const coordYHalfField = this.markup.halfField[1]
+    const coordYBall = this.#ball.point.y
+    return coordYBall < coordYHalfField ? halfEnum.GUEST : halfEnum.HOME
+  }
+
+  // БЛИЖНИЕ К МЯЧУ ВОРОТА
+  get goalPostsClosestBall() {      
+    return this.#points.filter(p => p instanceof GoalPostCls && p.owner === this.nameHalfFieldWhereBall) 
   }
 
   /**

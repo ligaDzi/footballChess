@@ -350,7 +350,8 @@ export class PointCls {
   }
  
   static _choiceClassPoint(x, y, code) {
-    const goalPostArr = ['К1', 'Т1', 'К35', 'Т35']
+    const goalPostGTArr = ['К1', 'Т1']
+    const goalPostHTArr = ['К35', 'Т35']
     const portalHTArr = ['К36', 'Л36', 'М36', 'Н36', 'О36', 'П36', 'Р36', 'С36', 'Т36']
     const portalGTArr = ['К0', 'Л0', 'М0', 'Н0', 'О0', 'П0', 'Р0', 'С0', 'Т0']
     const startPointAllArr = ['К18', 'Т18']
@@ -361,8 +362,11 @@ export class PointCls {
     ]
 
     switch (true) {
-      // ШТАНГА ДОМАШНЕЙ И ГОСТЕВОЙ КОМАНДЫ
-      case goalPostArr.includes(code): return new GoalPostCls(x, y, code)
+      // ШТАНГА ГОСТЕВОЙ КОМАНДЫ
+      case goalPostGTArr.includes(code): return new GoalPostCls(halfEnum.GUEST, x, y, code)
+
+      // ШТАНГА ДОМАШНЕЙ КОМАНДЫ
+      case goalPostHTArr.includes(code): return new GoalPostCls(halfEnum.HOME, x, y, code)
 
       // ВОРОТА ДОМАШНЕЙ КОМАНДЫ 
       case portalHTArr.includes(code): return new PortalPointCls(halfEnum.HOME, x, y, code)
@@ -435,7 +439,12 @@ export class CentralDistrictCls extends PointCls {
 }
 
 export class GoalPostCls extends PointCls {
-  constructor(...props) {
+  #owner = null
+
+  constructor(owner, ...props) {
     super(...props)
+    this.#owner = owner
   }
+
+  get owner() { return this.#owner }
 }

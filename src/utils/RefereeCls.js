@@ -1,8 +1,9 @@
 import RulesCls from './RulesCls'
 import { CentralDistrictCls, PointCls, StartPointCls } from './PointCls'
-import { modeGameEnum, halfEnum } from './helpers'
+import { modeGameEnum, halfEnum, logValue } from './helpers'
 import { StepCls, StepList } from './StepCls'
 import { NodePossibleMoveCls, PossibleMoveTreeCls } from './PossibleMoveTreeCls'
+import { abs } from 'mathjs'
 
 export default class RefereeCls {
   #name = null
@@ -79,15 +80,41 @@ export default class RefereeCls {
   
   /**
    * ВОЗВРАЩАЕТ МАССИВ ТОЧЕК ВОЗМОЖНЫХ ДЛЯ ПЕРЕДАЧИ / УДАРА
+   * @param {PointCls} pointBall 
    * @param {Array} kickPoints 
    * @param {StepList} steps 
    * @param {FieldCls} field 
    * @returns Array
    */
-  getPossibleKickPoints(kickPoints, steps, field) {
+  getPossibleKickPoints(pointBall, kickPoints, steps, field) {
     let possiblePoints = []
 
     kickPoints.forEach(point => {
+      // ПОПОДАЕТ ЛИ МЯЧ В ШТАНГУ БЛИЖНИХ ВОРОТ
+      const hitGoalPost = field.goalPostsClosestBall.filter(pointGP => {
+        const isHit = RulesCls.isBallHitGoalPost(pointBall, point, pointGP)
+        return isHit
+      })
+
+      // ЕСЛИ ПОЛЕТ МЯЧА ПЕРЕСЕКАЕТ ДВЕ ШТАНГИ ОСТАВИТЬ ТОЛЬКО БЛИЖНЮЮ ШТАНГУ
+      if (hitGoalPost.length > 1) {
+        const firstGP = hitGoalPost[0]
+        const secondGP = hitGoalPost[1]
+
+        if (abs(pointBall.x - firstGP.x) < abs(pointBall.x - secondGP.x)) {
+          possiblePoints.push(firstGP)
+        } else {
+          possiblePoints.push(secondGP)
+        }
+        return
+      }
+
+      // МЯЧ ПОПАЛ В ОДНУ ШТАНГУ
+      if (hitGoalPost.length > 0) {
+        possiblePoints.push(hitGoalPost[0])
+        return
+      }
+
       const isPossible = RulesCls.isPointFree(point) || RulesCls.isPointSurrounded(point, steps, field, this)
       
       if (isPossible) possiblePoints.push(point)
@@ -235,6 +262,20 @@ export default class RefereeCls {
   kickTeam(nameTeam) {
     if (nameTeam === this.#nameHT) this.modeGame = modeGameEnum.HOME_KICK
     if (nameTeam === this.#nameGT) this.modeGame = modeGameEnum.GUEST_KICK
+  }
+
+  ricochet() {    
+    if (this.#modeGame === modeGameEnum.HOME_BALL) this.modeGame = modeGameEnum.GUEST_RICOCHET
+    if (this.#modeGame === modeGameEnum.HOME_KICK) this.modeGame = modeGameEnum.GUEST_RICOCHET
+    if (this.#modeGame === modeGameEnum.GUEST_BALL) this.modeGame = modeGameEnum.HOME_RICOCHET
+    if (this.#modeGame === modeGameEnum.GUEST_KICK) this.modeGame = modeGameEnum.HOME_RICOCHET
+    return this
+  }
+
+  moveCentralDistrict() {    
+    if (this.#modeGame === modeGameEnum.HOME_KICK) this.modeGame = modeGameEnum.GUEST_CENTR
+    if (this.#modeGame === modeGameEnum.GUEST_KICK) this.modeGame = modeGameEnum.HOME_CENTR
+    return this
   }
 
   giveBallOpponent() {

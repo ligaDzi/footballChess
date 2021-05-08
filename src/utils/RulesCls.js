@@ -1,3 +1,5 @@
+import { det, abs, sqrt, square } from 'mathjs'
+
 import { CentralDistrictCls } from './PointCls'
 
 import { cornerNameEnum, logValue } from './helpers'
@@ -113,6 +115,30 @@ export default class RulesCls {
       case cornerNameEnum.RIGHT_BOTTOM:
         return !(leftPoint.checked && topPoint.checked && steps.isConnectionPoints(leftPoint, topPoint))
     }
+  }
+
+  /**
+   * ПОПАЛ ЛИ МЯЧ В ШТАНГУ
+   * @param {PointCls} pointBall 
+   * @param {PointCls} pointKick 
+   * @param {PointCls} pointGoalPost 
+   * @returns boolen
+   */
+  static isBallHitGoalPost(pointBall, pointKick, pointGoalPost) {
+    // ДЛИНН ОТРЕЗКА
+    const s1 = sqrt(square(pointBall.x - pointKick.x) + square(pointBall.y - pointKick.y))
+
+    // СУММА РОСТОЯНИЙ ДО ТОЧКИ
+    const s2 = sqrt(square(pointBall.x - pointGoalPost.x) + square(pointBall.y - pointGoalPost.y))
+    const s3 = sqrt(square(pointKick.x - pointGoalPost.x) + square(pointKick.y - pointGoalPost.y))
+    const sum = s2 + s3
+
+    // ТОЧНОСТЬ ПРОВЕРКИ
+    const PRECISION = 0.001
+
+    if (abs(s1 - sum) < PRECISION) return true
+
+    return false
   }
 
   static __getRightPoint(x, y, points) {

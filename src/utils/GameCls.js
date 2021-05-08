@@ -4,8 +4,8 @@ import FieldCls from './FieldCls'
 import BallCls from './BallCls'
 import RulesCls from './RulesCls'
 import { StepCls, StepList } from './StepCls'
-import { halfEnum, modeGameEnum } from './helpers'
-import { CentralDistrictCls } from './PointCls'
+import { halfEnum, modeGameEnum, logValue } from './helpers'
+import { CentralDistrictCls, GoalPostCls, PortalPointCls } from './PointCls'
 
 
 export default class GameCls {
@@ -61,7 +61,9 @@ export default class GameCls {
 
   nextStep(point) {
     const { modeGame, prevModeGame } = this.#referee
+    logValue('modeGame', modeGame)
     const kickEnum = [modeGameEnum.HOME_KICK, modeGameEnum.GUEST_KICK]
+    const rickochetEnum = [modeGame.HOME_RICOCHET, modeGame.GUEST_RICOCHET]
 
     if (kickEnum.includes(modeGame)) {
       this.__makeKick(point)
@@ -71,16 +73,24 @@ export default class GameCls {
 
     this.#teamWithBall.step(point)
     
-    const { pointsArroundBall, cornerArroundBall } = this.#field  
+    const { pointsArroundBall, cornerArroundBall } = this.#field 
+    
+
+    // МЯЧ ПОПАЛ В ШТАНГУ
+    // if (point instanceof GoalPostCls) {
+    //   this.__transferballOpponent(point)
+
+    //   const { kickPointsArroundBall } = this.#field
+    //   const possibleKickpoints = this.#referee.getPossibleKickPoints(kickPointsArroundBall, this.#steps, this.#field)
+    //   if (possibleKickpoints.length > 0) {
+    //     this.#field.updatePossibleMovePoints(possibleKickpoints)
+    //     return
+    //   }
+    // }
 
     // ВЫВОД МЯЧА ИЗ ЦЕНТРАЛЬНОГО КРУГА
     if (point instanceof CentralDistrictCls) {
       const possibleMovePoints = this.#referee.getPossibleMovePoints(pointsArroundBall, cornerArroundBall, this.#steps, true)
-
-      // ПЕРЕДАТЬ МЯЧ СОПЕРНИКУ ПОСЛЕ УДАРА
-      if (kickEnum.includes(modeGame)) {
-        this.__transferballOpponent()
-      }
 
       if (!this.#possibleMovePointsCentral || kickEnum.includes(modeGame)) {
         this.#possibleMovePointsCentral = this.#referee.getPossibleMovePointsCentral(
@@ -92,6 +102,11 @@ export default class GameCls {
       }
 
       if (this.#possibleMovePointsCentral.length > 0) {
+
+        // ПЕРЕДАТЬ МЯЧ СОПЕРНИКУ ПОСЛЕ УДАРА
+        if (kickEnum.includes(modeGame)) {
+          this.__transferballOpponent(point)
+        }
         
         if (this.#stepCount === 0) {
           const possibleMovePoints = this.#possibleMovePointsCentral.firstStep()
@@ -105,7 +120,7 @@ export default class GameCls {
         }
   
         if (this.#stepCount === 2) {
-          const possibleMovePoints = this.#possibleMovePointsCentral.thirdSteps(point.name)
+          const possibleMovePoints = this.#possibleMovePointsCentral.thirdStep(point.name)
   
           this.#field.updatePossibleMovePoints(possibleMovePoints)
         }
@@ -125,7 +140,7 @@ export default class GameCls {
       
           // ПЕРЕДАТЬ МЯЧ СОПЕРНИКУ ПОСЛЕ УДАРА
           if (kickEnum.includes(modeGame)) {
-            this.__transferballOpponent()
+            this.__transferballOpponent(point)
           }
           return
         }
@@ -134,7 +149,7 @@ export default class GameCls {
       
         // ПЕРЕДАТЬ МЯЧ СОПЕРНИКУ ПОСЛЕ УДАРА
         if (kickEnum.includes(modeGame)) {
-          this.__transferballOpponent()
+          this.__transferballOpponent(point)
         }
         return        
       }      
@@ -143,7 +158,7 @@ export default class GameCls {
     // УДАР ПО МЯЧУ
     this.#referee.kickTeam(this.#teamWithBall.name)
     const { kickPointsArroundBall } = this.#field
-    const possibleKickpoints = this.#referee.getPossibleKickPoints(kickPointsArroundBall, this.#steps, this.#field)
+    const possibleKickpoints = this.#referee.getPossibleKickPoints(point, kickPointsArroundBall, this.#steps, this.#field)
     if (possibleKickpoints.length > 0) {
       this.#field.updatePossibleMovePoints(possibleKickpoints)
       return
@@ -171,15 +186,28 @@ export default class GameCls {
     if (nameTeam === this.#guestTeam.name) this.#teamWithBall = this.#guestTeam
   }
 
-  __transferballOpponent() {
-    const nameTeam = this.#referee.giveBallOpponent().getNameTeamWithBall()
+  __transferballOpponent(point) {
+    let nameTeam = null
+
+    switch (true) {
+      case point instanceof CentralDistrictCls: 
+        nameTeam = this.#referee.moveCentralDistrict().getNameTeamWithBall()
+        break
+
+      // case point instanceof PortalPointCls: 
+      //   nameTeam = this.#referee.ricochet().getNameTeamWithBall()
+      //   break
+    
+      default:
+        nameTeam = this.#referee.giveBallOpponent().getNameTeamWithBall()
+    }    
     this.__transferBallToTeam(nameTeam)
   }
 
   __makeStep(point) {
     if (!this.#ball.point) return
     if (this.#stepCount === 3) {
-      this.__transferballOpponent()
+      this.__transferballOpponent(point)
       this.#stepCount = 0
     }
     this.#steps.addList( 

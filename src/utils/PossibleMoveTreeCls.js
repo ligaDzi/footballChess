@@ -21,7 +21,7 @@ export class PossibleMoveTreeCls {
       .possiblePoints.map(item => item.point)
   }
 
-  thirdSteps(pointName) {
+  thirdStep(pointName) {
     return this.#nodes
       .find(item => item.point.name === this.#selectedPathName)
       .possiblePoints.find(item => item.point.name === pointName)
