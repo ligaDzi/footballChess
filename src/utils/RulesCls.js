@@ -1,6 +1,6 @@
 import { det, abs, sqrt, square } from 'mathjs'
 
-import { CentralDistrictCls } from './PointCls'
+import { CentralDistrictCls, GoalPostCls } from './PointCls'
 
 import { cornerNameEnum, logValue } from './helpers'
 
@@ -25,6 +25,12 @@ export default class RulesCls {
     if (point instanceof CentralDistrictCls) return false
 
     return true
+  }
+
+  static isPointGoalPost(point) {
+    if (point instanceof GoalPostCls) return true
+
+    return false
   }
 
   /**
@@ -125,7 +131,7 @@ export default class RulesCls {
    * @returns boolen
    */
   static isBallHitGoalPost(pointBall, pointKick, pointGoalPost) {
-    // ДЛИНН ОТРЕЗКА
+    // ДЛИННА ОТРЕЗКА
     const s1 = sqrt(square(pointBall.x - pointKick.x) + square(pointBall.y - pointKick.y))
 
     // СУММА РОСТОЯНИЙ ДО ТОЧКИ

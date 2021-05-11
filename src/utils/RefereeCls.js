@@ -1,5 +1,5 @@
 import RulesCls from './RulesCls'
-import { CentralDistrictCls, PointCls, StartPointCls } from './PointCls'
+import { CentralDistrictCls, GoalPostCls, PointCls, PortalPointCls, StartPointCls } from './PointCls'
 import { modeGameEnum, halfEnum, logValue } from './helpers'
 import { StepCls, StepList } from './StepCls'
 import { NodePossibleMoveCls, PossibleMoveTreeCls } from './PossibleMoveTreeCls'
@@ -49,7 +49,10 @@ export default class RefereeCls {
       if (isBallCentralDistrict) {
         isPossible = RulesCls.isPointFree(point)
       } else {
-        isPossible = RulesCls.isPointFree(point) && RulesCls.isPointNOTCentralDistrict(point)
+        isPossible = RulesCls.isPointGoalPost(point) || (
+          RulesCls.isPointFree(point) && 
+          RulesCls.isPointNOTCentralDistrict(point)
+        )
       }
       if (isPossible) possiblePoints.push(point)
     })
@@ -68,7 +71,14 @@ export default class RefereeCls {
           if (isBallCentralDistrict) {
             isPossible = RulesCls.isPointFree(point) && RulesCls.isCornerPointNOTBlockCentral(point, corner, pointsArroundBall, steps)
           } else {
-            isPossible = RulesCls.isPointFree(point) && RulesCls.isPointNOTCentralDistrict(point) && RulesCls.isCornerPointNOTBlock(point, corner, pointsArroundBall, steps)
+            isPossible = (
+              RulesCls.isPointGoalPost(point) && 
+              RulesCls.isCornerPointNOTBlock(point, corner, pointsArroundBall, steps)
+              ) || (
+              RulesCls.isPointFree(point) && 
+              RulesCls.isPointNOTCentralDistrict(point) && 
+              RulesCls.isCornerPointNOTBlock(point, corner, pointsArroundBall, steps)
+            )
           }
           if (isPossible) possiblePoints.push(point)       
         }
@@ -92,6 +102,10 @@ export default class RefereeCls {
     kickPoints.forEach(point => {
       // ПОПОДАЕТ ЛИ МЯЧ В ШТАНГУ БЛИЖНИХ ВОРОТ
       const hitGoalPost = field.goalPostsClosestBall.filter(pointGP => {
+
+        // ЕСЛИ МЯЧ ПОПАЛ В ШТАНГУ, ИСКЛЮЧИТЬ ЭТУ ШТАНГУ ИЗ РАСЧЕТОВ
+        if (pointBall instanceof GoalPostCls && pointBall === pointGP) return false
+
         const isHit = RulesCls.isBallHitGoalPost(pointBall, point, pointGP)
         return isHit
       })
@@ -115,7 +129,9 @@ export default class RefereeCls {
         return
       }
 
-      const isPossible = RulesCls.isPointFree(point) || RulesCls.isPointSurrounded(point, steps, field, this)
+      const isPossible = RulesCls.isPointGoalPost(point) || 
+        RulesCls.isPointFree(point) || 
+        RulesCls.isPointSurrounded(point, steps, field, this)
       
       if (isPossible) possiblePoints.push(point)
     })
@@ -264,7 +280,7 @@ export default class RefereeCls {
     if (nameTeam === this.#nameGT) this.modeGame = modeGameEnum.GUEST_KICK
   }
 
-  ricochet() {    
+  ricochet() {   
     if (this.#modeGame === modeGameEnum.HOME_BALL) this.modeGame = modeGameEnum.GUEST_RICOCHET
     if (this.#modeGame === modeGameEnum.HOME_KICK) this.modeGame = modeGameEnum.GUEST_RICOCHET
     if (this.#modeGame === modeGameEnum.GUEST_BALL) this.modeGame = modeGameEnum.HOME_RICOCHET

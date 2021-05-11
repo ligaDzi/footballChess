@@ -63,9 +63,9 @@ export default class GameCls {
     const { modeGame, prevModeGame } = this.#referee
     logValue('modeGame', modeGame)
     const kickEnum = [modeGameEnum.HOME_KICK, modeGameEnum.GUEST_KICK]
-    const rickochetEnum = [modeGame.HOME_RICOCHET, modeGame.GUEST_RICOCHET]
+    const rickochetEnum = [modeGameEnum.HOME_RICOCHET, modeGameEnum.GUEST_RICOCHET]
 
-    if (kickEnum.includes(modeGame)) {
+    if (kickEnum.includes(modeGame) || rickochetEnum.includes(modeGame)) {
       this.__makeKick(point)
     } else {
       this.__makeStep(point)
@@ -77,16 +77,17 @@ export default class GameCls {
     
 
     // МЯЧ ПОПАЛ В ШТАНГУ
-    // if (point instanceof GoalPostCls) {
-    //   this.__transferballOpponent(point)
+    if (point instanceof GoalPostCls) {
+      this.__transferballOpponent(point)
 
-    //   const { kickPointsArroundBall } = this.#field
-    //   const possibleKickpoints = this.#referee.getPossibleKickPoints(kickPointsArroundBall, this.#steps, this.#field)
-    //   if (possibleKickpoints.length > 0) {
-    //     this.#field.updatePossibleMovePoints(possibleKickpoints)
-    //     return
-    //   }
-    // }
+      const { kickPointsArroundBall } = this.#field
+      const possibleKickpoints = this.#referee.getPossibleKickPoints(point, kickPointsArroundBall, this.#steps, this.#field)
+      
+      if (possibleKickpoints.length > 0) {
+        this.#field.updatePossibleMovePoints(possibleKickpoints)
+        return
+      }
+    }
 
     // ВЫВОД МЯЧА ИЗ ЦЕНТРАЛЬНОГО КРУГА
     if (point instanceof CentralDistrictCls) {
@@ -104,7 +105,7 @@ export default class GameCls {
       if (this.#possibleMovePointsCentral.length > 0) {
 
         // ПЕРЕДАТЬ МЯЧ СОПЕРНИКУ ПОСЛЕ УДАРА
-        if (kickEnum.includes(modeGame)) {
+        if (kickEnum.includes(modeGame) || rickochetEnum.includes(modeGame)) {
           this.__transferballOpponent(point)
         }
         
@@ -139,7 +140,7 @@ export default class GameCls {
           this.#field.updatePossibleMovePoints(possibleMovePoints)
       
           // ПЕРЕДАТЬ МЯЧ СОПЕРНИКУ ПОСЛЕ УДАРА
-          if (kickEnum.includes(modeGame)) {
+          if (kickEnum.includes(modeGame) || rickochetEnum.includes(modeGame)) {
             this.__transferballOpponent(point)
           }
           return
@@ -148,7 +149,7 @@ export default class GameCls {
         this.#field.updatePossibleMovePoints(possibleMovePoints)
       
         // ПЕРЕДАТЬ МЯЧ СОПЕРНИКУ ПОСЛЕ УДАРА
-        if (kickEnum.includes(modeGame)) {
+        if (kickEnum.includes(modeGame) || rickochetEnum.includes(modeGame)) {
           this.__transferballOpponent(point)
         }
         return        
@@ -194,9 +195,9 @@ export default class GameCls {
         nameTeam = this.#referee.moveCentralDistrict().getNameTeamWithBall()
         break
 
-      // case point instanceof PortalPointCls: 
-      //   nameTeam = this.#referee.ricochet().getNameTeamWithBall()
-      //   break
+      case point instanceof GoalPostCls: 
+        nameTeam = this.#referee.ricochet().getNameTeamWithBall()
+        break
     
       default:
         nameTeam = this.#referee.giveBallOpponent().getNameTeamWithBall()
